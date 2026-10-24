@@ -1,0 +1,18 @@
+from __future__ import annotations
+
+from sqlalchemy import select
+
+from app.models.user import User
+from app.repositories.base import BaseRepository
+
+
+class UserRepository(BaseRepository[User]):
+    model = User
+
+    def get_by_username(self, username: str) -> User | None:
+        return self.session.scalar(
+            select(User).where(User.username == username.strip().lower())
+        )
+
+    def get_by_email(self, email: str) -> User | None:
+        return self.session.scalar(select(User).where(User.email == email.strip().lower()))
