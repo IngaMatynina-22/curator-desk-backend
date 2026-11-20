@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from app.core.enums import CuratorLogCategory
 from app.schemas.common import ORMModel
@@ -17,6 +17,27 @@ class CuratorLogCreate(BaseModel):
     meeting_id: int | None = None
     student_ids: list[int] = Field(default_factory=list)
 
+    @field_validator("title")
+    @classmethod
+    def validate_title(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("Title must not be empty")
+        return value
+
+    @field_validator("description")
+    @classmethod
+    def validate_description(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("Description must not be empty")
+        return value
+
+    @field_validator("student_ids")
+    @classmethod
+    def unique_student_ids(cls, value: list[int]) -> list[int]:
+        return list(dict.fromkeys(value))
+
 
 class CuratorLogUpdate(BaseModel):
     occurred_at: datetime | None = None
@@ -28,6 +49,31 @@ class CuratorLogUpdate(BaseModel):
     event_id: int | None = None
     meeting_id: int | None = None
     student_ids: list[int] | None = None
+
+    @field_validator("title")
+    @classmethod
+    def validate_title(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        value = value.strip()
+        if not value:
+            raise ValueError("Title must not be empty")
+        return value
+
+    @field_validator("description")
+    @classmethod
+    def validate_description(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        value = value.strip()
+        if not value:
+            raise ValueError("Description must not be empty")
+        return value
+
+    @field_validator("student_ids")
+    @classmethod
+    def unique_student_ids(cls, value: list[int] | None) -> list[int] | None:
+        return list(dict.fromkeys(value)) if value is not None else None
 
 
 class CuratorLogFilter(BaseModel):

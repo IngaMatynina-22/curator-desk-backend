@@ -23,3 +23,18 @@ def test_assignment_overdue_computed(container):
     done = container.assignments.complete(assignment.id, "done")
     assert done.status == AssignmentStatus.DONE
     assert done.is_overdue is False
+
+
+def test_assignment_deduplicates_student_ids(container):
+    _, student, _, _ = seed_basic(container)
+
+    assignment = container.assignments.create(
+        {
+            "title": "  Перевірка дублів  ",
+            "due_date": date.today(),
+            "student_ids": [student.id, student.id],
+        }
+    )
+
+    assert assignment.title == "Перевірка дублів"
+    assert assignment.student_ids == [student.id]

@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from app.core.enums import CuratorLogCategory
-from app.core.exceptions import ConflictError
+from app.core.exceptions import ConflictError, ValidationError
 from tests.factories import seed_basic
 
 
@@ -40,3 +40,17 @@ def test_curator_log_no_duplicate_for_meeting(container):
 
     found = container.curator_logs.list({"query": "attendance"})
     assert found.total >= 1
+
+
+def test_curator_log_rejects_blank_description(container):
+    try:
+        container.curator_logs.create(
+            {
+                "occurred_at": datetime.now().replace(microsecond=0),
+                "title": "Запис",
+                "description": "   ",
+            }
+        )
+        assert False
+    except ValidationError:
+        pass
